@@ -1,0 +1,127 @@
+---
+title: "Hypothesis Testing"
+author: "George Melrose"
+date: "23/01/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Hypothesis Testing Tutorial (Statology)
+
+A Hypothesis Testing tutorial from 'statology.org' that explains how to do the following hypothesis tests in R: one sample t-test; two samples t-test; paired samples t-test.
+
+The **t.test()** function is used to perform each type of test:
+```
+#one sample t-test#
+
+t.test(x, y = NULL,
+       alternative = c("two.sided,", "less", "greater"), mu = 0, paired = FALSE, var.equal = FALSE, conf.level = 0.95,)
+```
+The components of the t.test() function are -
+
+* **x,y**: Two samples of data
+* **alternative**: Alternative hypothesis of the test
+* **mu**: True value of the mean
+* **paired** : Whether to perform a paired t-test or not
+* **var.equal** : Whether to assume the variances are equal between the samples
+* **conf.level** : The confidence level
+ 
+### One Sample t-test
+ 
+A one-sample t-test tests whether or not the mean of a population is equal to some other value.
+
+For examples, we want to know whether or not the mean weight of a turtle species is equal to 310 pounds. We obtain a random samples of turtles with the following weights:
+
+**Weights** : 300,315,320,321,346,305,304,310,315
+
+```{r}
+#Defining a vector of turtle weights#
+turtle_weights <- c(300,315,320,321,346,305,304,310,315)
+
+#Perform a one sample t-test#
+t.test(x = turtle_weights, mu = 310)
+```
+
+We obtain useful info. from the output - 
+
+* t-test statistic: **1.1225**
+* degrees of freedom: **8**
+* p-value: **0.2942**
+* 95% confidence interval for true mean: **(304.6107, 325.6116)**
+* mean of turtle weights: **315.111**
+
+As the p-value is above 0.05, we accept the null hypothesis. We don't have enough evidence to say that the mean weight of the turtle species is different from 310 pounds. 
+
+
+### Two Sample t-test 
+
+A two sample t-test determines whether or not the means of two populations are equal.
+
+For example, let us investigate whether or not two different turtle species have equal mean weights. We collect random samples of turtles of each species:
+
+**Hawksbill sea turtle**: 180,186,190,198,210,178,169,187
+
+**Kemp's ridley turtle**:
+70,75,79,76,82,69,67,72
+
+```{r}
+#Define vector of turtle weights for each species#
+Hawksbill_sea_turtle <- c(180,186,190,198,210,178,169,187)
+
+Kemps_ridley_turtle <-
+c(70,75,79,76,82,69,67,72)
+
+#Perform a two-sample t-test#
+t.test(x = Hawksbill_sea_turtle, y = Kemps_ridley_turtle)
+```
+
+We obtain the following from the output - 
+
+* t-test statistic: **23.548**
+* degrees of freedom: **9.2924**
+* p-value: **1.334e-09**
+* 95% confidence interval for true mean: 
+  **( 102.6485, 124.3515)**
+* mean of turtle species' weights: **187.25, 73.75**
+
+As the p-value is well below .05, the null hypothesis is rejected - there's evidence to suggest the mean weight between the two species is not equal.
+
+### Paired Samples t-test
+
+This test is used to compare the means of two samples when each observation in one samples can be paired with an observation in another sample.
+
+For example, we want to know whether or not a training program increases the max. vertical jump (in inches) of basketball players. 
+
+Random samples of 12 college basketball players and their max. vertical jumps are taken. Each player then uses the training program for one month and afterwards, their max. vertical jump is measured.
+
+The data for the above is here:
+
+**Before**:22, 24, 20, 19, 19, 20, 22, 25, 24, 23, 22, 21
+
+**After**:23, 25, 20, 24, 18, 22, 23, 28, 24, 25, 24, 20
+
+```{r}
+#Defining vectors for before and after max. jump heights#
+
+before <- c(22, 24, 20, 19, 19, 20, 22, 25, 24, 23, 22, 21)
+
+after <- c(23, 25, 20, 24, 18, 22, 23, 28, 24, 25, 24, 20)
+
+#Perform a paired samples t-test#
+t.test(x = before, y = after, paired = TRUE)
+```
+
+We get the following from the output:
+* t-test statistic: **-2.5289**
+* degrees of freedom: **11**
+* p-value: **0.02803**
+* 95% confidence interval for true mean: 
+  **(-2.34, -0.16)**
+* mean difference before and after: **-1.25**
+
+The p-value < 0.05 so the null hypothesis is rejected. There is evidence to suggest the mean jump height before and after thr training program is different. 
