@@ -1,5 +1,5 @@
 ---
-title: "Hypothesis Testing"
+title: "T tests"
 author: "George Melrose"
 date: "23/01/2022"
 output:
