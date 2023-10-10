@@ -1,0 +1,294 @@
+---
+title: "Hypothesis Testing Examples"
+author: "George Melrose"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+
+knitr::opts_chunk$set(echo = TRUE)
+
+pacman::p_load(effectsize,Hmisc)
+```
+
+
+### F-tests
+
+An F-test tests whether two population variances are equal.
+
+H0 - Population variances are equal
+
+H1 - Population variances are not equal
+
+To do an F-test, one can use the *var.test()* function in one of two ways:
+
+* var.test(x,y, alternative = "two.sided")
+
+* var.test(values ~ groups, data, alternative = "two.sided")
+
+*Alternative* indicates the alternative hypothesis.
+
+```{r defining two groups and performing an f test}
+#define groups#
+x <- c(76,65,78,69,78,69)
+y <- c(75,87,59,60,63,65)
+
+#perform F-test to determine if variances are equal#
+var.test(x,y)
+```
+The p-value is  over 0.05 so the H0 is accepted. There isn't enough evidence to suggest the population variances aren't equal.
+
+```{r defining two groups and performing an f test again}
+#defining groups#
+data <- data.frame(values=c(20,20,27,31,25,19,23,26,35,31,30,28,19,20),group=rep(c('A','B'), each=7))
+
+#performing an F-test#
+var.test(values~group, data = data)
+```
+The p-values is way above .05 and so the H0 is accepted - population variances are equal.
+
+Two questions usually are answered by the F-test -
+
+* Do two samples come from populations with equal variances?
+
+* Does a new treatment or process reduce the variability of some current treatment or process?
+
+
+### Fisher's Exact Test 
+
+Fisher's exact test is used instead of a chi-squared test, with 2x2 tables, when samples sizes are too small. Firstly, a 2x2 matrix must be generated. 
+
+```{r generating a two by two matrix}
+data = matrix(c(3,6,7,8), nrow=2)
+print(data)
+```
+To conduct Fisher's Exact test, one simply uses the *fisher.test()* function.
+
+```{r conducting fishers test on data}
+fisher.test(data)
+```
+In Fisher's exact test, the H0 is that the 2 columns are independent/ the odds ratio (OR) =1. To determine this, the p-value is useful.As the p-value is way above the normal 0.05 threshold,at 0.6785, there isn't enough evidence to reject the null hypothesis. There isn't any statistically significant difference between the two columns. 
+
+Additionally, the OR of 0.585 indicates that there's a low odds of association between the two columns. The 95% confidence interval (0.06785812, 4.14635455) contains 1 within the ratio, confirming that the OR isn't significantly different to 1. 
+
+
+### Pooled Standard Deviation 
+
+Pooled SD is the weighted average of SDs from two or more independent groups. It most often crops up in the two-samples t-test, when ones determines whether or not the means of two populations are equal.
+
+The formula for pooled SD is - sqrt((n1-1)sqr(s1) + (n2-1)sqr(s2)/ (n1+n2-2))
+
+where:
+
+* n1,n2: Sample sizes for group 1 and group 2 respectively.
+
+* s1,s2: SD for group 1 and group 2 respectively.
+
+#### Manual calculation
+
+```{r calculating pooled sd manually }
+#define samples#
+data1 <- c(6,7,5,1,9,98,1,14,106,2)
+data2 <- c(5,6,1,7,15,145,158,78,96,46,32,4)
+
+#find SD of each sample#
+s1 <- sd(data1)
+s2 <- sd(data2)
+
+#find size of each samples#
+n1 <- length(data1)
+n2 <- length(data2)
+
+#pooled SD#
+pooled <- sqrt(((n1-1)*s1^2 + (n2-1)*s2^2) / (n1+n2-2))
+print(pooled)
+```
+
+#### Using a function
+
+```{r calculating pooled sd using an r function}
+
+sd_pooled(data1, data2)
+```
+
+### Standard Deviation Several Ways 
+
+One can use the *sd()* function to calculate the standard deviation (sd) of a vector in R.
+
+#### Example 1: SD of a Vector
+
+```{r sd of a vector}
+
+#creating a dataset#
+data <- c(runif(10))
+
+#finding sd#
+sd(data)
+
+```
+
+The argument *na.rm=TRUE* is needed to calculate sd if there are missing values in a dataset.
+
+```{r sd of a dataset with missing values}
+#dataset with missing values#
+data2 <- c(1,3,NA,6,87,6,53,32,NA,10)
+
+#find sd#
+sd(data2, na.rm = TRUE)
+```
+
+#### Example 2: Calculating SD of a column in a dataframe
+
+```{r SD of a column in a dataframe}
+#creating a dataframe with 
+df <- data.frame(replicate(5,sample(0:20,6,rep=TRUE)))
+
+#find the sd of the second column#
+sd(df$X2)
+```
+
+#### Example 3: Calculate SD of several dataframe columns
+
+```{r SD of several dataframe columns}
+apply(df[ , c('X3','X5')], 2, sd)
+```
+
+
+### One Sample t-test
+ 
+A one-sample t-test tests whether or not the mean of a population is equal to some other value.
+
+For examples, we want to know whether or not the mean weight of a turtle species is equal to 310 pounds. We obtain a random samples of turtles with the following weights:
+
+**Weights** : 300,315,320,321,346,305,304,310,315
+
+```{r one sample t-test}
+#Defining a vector of turtle weights#
+turtle_weights <- c(300,315,320,321,346,305,304,310,315)
+
+#Perform a one sample t-test#
+t.test(x = turtle_weights, mu = 310)
+```
+
+We obtain useful info. from the output - 
+
+* t-test statistic: **1.1225**
+* degrees of freedom: **8**
+* p-value: **0.2942**
+* 95% confidence interval for true mean: **(304.6107, 325.6116)**
+* mean of turtle weights: **315.111**
+
+As the p-value is above 0.05, we accept the null hypothesis. We don't have enough evidence to say that the mean weight of the turtle species is different from 310 pounds. 
+
+
+### Two Sample t-test 
+
+A two sample t-test determines whether or not the means of two populations are equal.
+
+For example, let us investigate whether or not two different turtle species have equal mean weights. We collect random samples of turtles of each species:
+
+**Hawksbill sea turtle**: 180,186,190,198,210,178,169,187
+
+**Kemp's ridley turtle**: 70,75,79,76,82,69,67,72
+
+```{r Two Sample t-test}
+#Define vector of turtle weights for each species#
+Hawksbill_sea_turtle <- c(180,186,190,198,210,178,169,187)
+
+Kemps_ridley_turtle <-
+c(70,75,79,76,82,69,67,72)
+
+#Perform a two-sample t-test#
+t.test(x = Hawksbill_sea_turtle, y = Kemps_ridley_turtle)
+```
+
+We obtain the following from the output - 
+
+* t-test statistic: **23.548**
+* degrees of freedom: **9.2924**
+* p-value: **1.334e-09**
+* 95% confidence interval for true mean: 
+  **( 102.6485, 124.3515)**
+* mean of turtle species' weights: **187.25, 73.75**
+
+As the p-value is well below .05, the null hypothesis is rejected - there's evidence to suggest the mean weight between the two species is not equal.
+
+### Paired Samples t-test
+
+This test is used to compare the means of two samples when each observation in one samples can be paired with an observation in another sample.
+
+For example, we want to know whether or not a training program increases the max. vertical jump (in inches) of basketball players. 
+
+Random samples of 12 college basketball players and their max. vertical jumps are taken. Each player then uses the training program for one month and afterwards, their max. vertical jump is measured.
+
+The data for the above is here:
+
+**Before**:22, 24, 20, 19, 19, 20, 22, 25, 24, 23, 22, 21
+
+**After**:23, 25, 20, 24, 18, 22, 23, 28, 24, 25, 24, 20
+
+```{r paired samples t test} 
+#Defining vectors for before and after max. jump heights#
+
+before <- c(22, 24, 20, 19, 19, 20, 22, 25, 24, 23, 22, 21)
+
+after <- c(23, 25, 20, 24, 18, 22, 23, 28, 24, 25, 24, 20)
+
+#Perform a paired samples t-test#
+t.test(x = before, y = after, paired = TRUE)
+```
+
+We get the following from the output:
+* t-test statistic: **-2.5289**
+* degrees of freedom: **11**
+* p-value: **0.02803**
+* 95% confidence interval for true mean: 
+  **(-2.34, -0.16)**
+* mean difference before and after: **-1.25**
+
+The p-value < 0.05 so the null hypothesis is rejected. There is evidence to suggest the mean jump height before and after the training program is different. 
+
+### Weighted Standard Deviation
+
+Weighted standard deviation is used to measure the dispersion of dataset values, when some values in a dataset have much higher weights than others.The most straightforward way to do this is to use the *wt.var()* function from the *Hmisc* package.
+
+When talking about a weight variable, it means just that - observations having more weight have more influence in analysis than oversvations with smaller weights. An unweighted analysis means a weighted analysis where all weights are 1. A great explanation of statistics 'weights' is provided here - https://blogs.sas.com/content/iml/2017/10/02/weight-variables-in-statistics-sas.html
+
+```{r generating values with weights to find out the weighted variance}
+#Data values#
+x <- c(5, 56, 7, 8 ,19, 107, 68)
+
+#Weights# 
+wt <- c(.5,1,2,3,2,1,.4)
+
+#Weighted variance#
+weighted_var <- wtd.var(x, wt)
+
+#weighted variance SD#
+sqrt(weighted_var)
+```
+
+#### Weighted SD for one column of a DF
+
+```{r weighted sd for a column of a df}
+
+#generating an EPL-themed dataframe#
+
+df <- data.frame(team=c('Man U','Man City','Liverpool','Newcastle','Boro','Chelsea','Leeds'),wins = c(2,19,3,5,3,11,10), points=c(7,45,10,12,9,28,20))
+
+#weights#
+wt <- c(1,1,1.5,0.5,2,1,0.8)
+
+#weighted SD of points#
+sqrt(wtd.var(df$points, wt))
+```
+
+#### Weighted SD of multiple columns of a DF
+
+One can use the *sapply()* function to calculate weighted SD for multiple columns in a DF. Sapply() is a built-in function that applies a function to all input elements be they lists, vectors, or DFs. Sapply() returns a vector or matrix.
+
+```{r weighted SD of multiple columns of a DF using sapply}
+sapply(df[c('wins', 'points')], function(x) sqrt(wtd.var(x,wt)))
+```
